@@ -112,10 +112,19 @@ message AddressBook {
 
         const indent = line.length - line.trimLeft().length
         const indentChar = line[0];
+        const lineRegex = /(required|optional)\s+([\w\d]+)\s+(.+)\s*=.*;(.*)/
 
         const tokens = line.trim().split(" ").filter(Boolean);
+        const lineSuffix = line.split(";").filter(Boolean)[1];
 
         let isRepeated = false;
+        let isOptional = false;
+
+        if (tokens[0] === 'optional' || tokens[0] === 'required') {
+          isOptional = tokens[0] === 'optional';
+          tokens.shift();
+        }
+
         // debugger;
         switch (tokens[0]) {
           case "//":
@@ -129,7 +138,8 @@ message AddressBook {
             tokens.shift();
         }
 
-        return `${indentChar.repeat(indent)}${tokens[1]}: ${protoToTsType(tokens[0])}${ isRepeated ? "[]" : ""}`;
+
+        return `${indentChar.repeat(indent)}${tokens[1]}${isOptional ? "?": ""}: ${protoToTsType(tokens[0])}${ isRepeated ? "[]" : ""}; ${lineSuffix||''}`;
       }
 
       parseProtobuf(protobufVal());
